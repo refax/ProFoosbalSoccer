@@ -128,7 +128,7 @@ public class IAController : MonoBehaviour {
 
             float distance = Mathf.Abs(m_NearestPlayers[i].transform.position.z - m_BallToFollow.transform.position.z);
 
-            if ( m_TargetPosition.x - m_PlayersUnderControl[i].transform.position.x < 1) //se la palla è davanti segui
+            if ( m_TargetPosition.x - m_PlayersUnderControl[i].transform.position.x < -0.5) //se la palla è davanti segui
             {
                 if (distance < 0.2)
                 {

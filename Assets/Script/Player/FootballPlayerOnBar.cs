@@ -29,12 +29,18 @@ public class FootballPlayerOnBar : MonoBehaviour {
     private MeshRenderer m_BarMeshRender;
     private Rigidbody m_RigidBody;
 
-    private float m_UpDownMaxVel = 15000.0f;
+    private float m_UpDownMaxVel = 500.0f;
     private float m_UpDownDirection = 0.0f;
 
     public event BallIsInMyArea OnBallIsInMyArea = null;
     public event PlayerHasDetectBall OnPlayerHasDetectBall = null;
     public event PlayerHasDetectBallNextToHim OnPlayerHasDetectBallNextToHim = null;
+
+    private bool m_BallHitOnFront = true;
+
+    private bool m_DoKickFinished = true;
+
+    private bool m_WasKickingOnCollision = false;
 
 
     private void Awake()
@@ -83,7 +89,7 @@ public class FootballPlayerOnBar : MonoBehaviour {
 
     private void FixedUpdate()
     {
-        m_RigidBody.velocity = new Vector3(0, 0, m_UpDownDirection * m_UpDownMaxVel * Time.fixedDeltaTime);
+        m_RigidBody.velocity = new Vector3(0, 0, m_UpDownDirection * m_UpDownMaxVel * Time.deltaTime);
     }
 
     public void DoKick( bool load )
@@ -165,20 +171,71 @@ public class FootballPlayerOnBar : MonoBehaviour {
         get { return m_Players;  }
     }
 
-
-    private void OnCollisionExit(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
-        /*
         int mask = 1 << collision.gameObject.layer;
         if ((mask & m_BallLayer.value) != 0)
         {
-            Ball b = collision.gameObject.GetComponent<Ball>();
-
-            if (b.GetCurrentVelocity().magnitude < 10)
+            m_WasKickingOnCollision = !m_DoKickFinished;
+            if (collision.contacts.Length != 0)
             {
-                b.AddImpulse(b.GetCurrentVelocity().normalized * 10);
+                float p = Vector3.Dot(collision.contacts[0].normal, transform.right);
+
+                m_BallHitOnFront = (p < 0);
+
+
             }
-        }*/
+        }
     }
+
+    private void OnCollisionExit(Collision collision)
+    {
+
+        if (m_WasKickingOnCollision) //check if is doing a kick mor or less
+        {
+            int mask = 1 << collision.gameObject.layer;
+            if ((mask & m_BallLayer.value) != 0)
+            {
+                Ball b = collision.gameObject.GetComponent<Ball>();
+
+                /* Physics hack per correggere direzione della palla */
+                float p = Vector3.Dot(b.GetCurrentVelocity(), transform.right);
+
+                Vector3 fixedBallVel = new Vector3(b.GetCurrentVelocity().x, b.GetCurrentVelocity().y, Mathf.Clamp(b.GetCurrentVelocity().z, -0.8f, 0.8f));
+
+                if (m_BallHitOnFront && p < 0)
+                {
+                    fixedBallVel = new Vector3(-b.GetCurrentVelocity().x, b.GetCurrentVelocity().y, b.GetCurrentVelocity().z);
+
+                    //b.GetRigidBody().MovePosition(b.GetRigidBody().position + fixedBallVel.normalized*2);
+                    
+                    
+                }
+
+                b.SetVelocity(fixedBallVel);
+
+
+                /* Add force if is too slow */
+                if (b.GetCurrentVelocity().magnitude < b.m_MaxVel)
+                {
+                    
+                    b.AddImpulse(b.GetCurrentVelocity().normalized * 1000);
+                }
+            }
+        }
+
+    }
+
+
+    private void KickAnimationStarted()
+    {
+        m_DoKickFinished = false;
+    }
+
+    private void KickAnimationFinished()
+    {
+        m_DoKickFinished = true;
+    }
+
 
 }

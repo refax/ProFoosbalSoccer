@@ -18,15 +18,20 @@ public class Ball : MonoBehaviour {
     private void FixedUpdate()
     {
         //Physics hotfix
+ 
         if(m_rb.velocity.sqrMagnitude > m_MaxVel * m_MaxVel)
         {
             m_rb.velocity = m_rb.velocity.normalized * m_MaxVel;
         }
 
+        
+        
         if (m_rb.velocity.sqrMagnitude < 10 * 10)
         {
             m_rb.velocity = m_rb.velocity.normalized * 10;
         }
+        
+
 
     }
 
@@ -40,6 +45,9 @@ public class Ball : MonoBehaviour {
         m_rb.transform.position = i_Position;
     }
 
+    
+
+
     public void SetMaxSpeed()
     {
         m_rb.velocity = m_rb.velocity.normalized * m_MaxVel;
@@ -47,13 +55,20 @@ public class Ball : MonoBehaviour {
 
     public void AddImpulse (Vector3 i_Impulse)
     {
-        m_rb.AddForce(i_Impulse, ForceMode.Impulse);
+        m_rb.AddForce(i_Impulse, ForceMode.Force);
     }
 
     public Vector3 GetCurrentVelocity()
     {
         return m_rb.velocity;
     }
+    
+   
+    public Rigidbody GetRigidBody()
+    {
+        return m_rb;
+    }
+
 
 
 

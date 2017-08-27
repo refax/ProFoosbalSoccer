@@ -28,6 +28,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField]
     private float m_MatchDurationInMillisecond = 240;
 
+    private bool m_MatchIsOver = false;
+
 
     // Use this for initialization
     private void Awake()
@@ -53,7 +55,7 @@ public class GameManager : MonoBehaviour {
         {
             Debug.LogError("UIManager not assigned in " + name);
         }
-        Physics.gravity = new Vector3(0, -50, 0);
+        Physics.gravity = new Vector3(0, -40, 0);
     }
 
     private void Start()
@@ -65,12 +67,13 @@ public class GameManager : MonoBehaviour {
     {
         m_MatchDurationInMillisecond -= Time.deltaTime;
 
-        if(m_MatchDurationInMillisecond < 0 )
+        if(m_MatchDurationInMillisecond < 0 && !m_MatchIsOver)
         {
             m_UIManager.UpdateTimeLeft(0);
             m_UIManager.MatchIsOver();
+            m_MatchIsOver = true;
         }
-        else
+        else if(!m_MatchIsOver)
         {
             m_UIManager.UpdateTimeLeft(m_MatchDurationInMillisecond);
         }
